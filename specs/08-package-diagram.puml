@@ -1,0 +1,104 @@
+@startuml
+title Library Management System - Package Diagram
+left to right direction
+skinparam packageStyle rectangle
+
+package "presentation" as Presentation {
+  package "controller" as Controllers
+  package "request/response" as WebDto
+}
+
+package "application" as Application {
+  package "reader" as AppReader
+  package "card" as AppCard
+  package "catalog" as AppCatalog
+  package "circulation" as AppCirculation
+  package "reservation" as AppReservation
+  package "fine" as AppFine
+  package "admin" as AppAdmin
+  package "authorization" as Authorization
+}
+
+package "domain" as Domain {
+  package "reader" as DomainReader
+  package "card" as DomainCard
+  package "catalog" as DomainCatalog
+  package "circulation" as DomainCirculation
+  package "reservation" as DomainReservation
+  package "fine" as DomainFine
+  package "admin" as DomainAdmin
+  package "repository interfaces" as RepositoryPorts
+}
+
+package "infrastructure" as Infrastructure {
+  package "persistence" as Persistence
+  package "security adapters" as SecurityAdapters
+  package "external adapters" as ExternalAdapters
+}
+
+package "dto" as Dto {
+  package "commands" as Commands
+  package "queries" as Queries
+  package "results and errors" as Results
+}
+
+package "test" as Tests {
+  package "unit" as UnitTests
+  package "integration" as IntegrationTests
+  package "api" as ApiTests
+}
+
+Controllers --> AppReader
+Controllers --> AppCard
+Controllers --> AppCatalog
+Controllers --> AppCirculation
+Controllers --> AppReservation
+Controllers --> AppFine
+Controllers --> AppAdmin
+Controllers --> Authorization
+Controllers --> WebDto
+
+AppReader --> DomainReader
+AppCard --> DomainCard
+AppCatalog --> DomainCatalog
+AppCirculation --> DomainCirculation
+AppReservation --> DomainReservation
+AppFine --> DomainFine
+AppAdmin --> DomainAdmin
+AppReader ..> RepositoryPorts
+AppCard ..> RepositoryPorts
+AppCatalog ..> RepositoryPorts
+AppCirculation ..> RepositoryPorts
+AppReservation ..> RepositoryPorts
+AppFine ..> RepositoryPorts
+AppAdmin ..> RepositoryPorts
+Application --> Dto
+
+DomainReader --> RepositoryPorts
+DomainCard --> RepositoryPorts
+DomainCatalog --> RepositoryPorts
+DomainCirculation --> RepositoryPorts
+DomainReservation --> RepositoryPorts
+DomainFine --> RepositoryPorts
+DomainAdmin --> RepositoryPorts
+
+Infrastructure ..> RepositoryPorts : implements
+Persistence ..> Domain
+SecurityAdapters ..> Authorization
+ExternalAdapters ..> Domain
+
+Tests ..> Controllers
+Tests ..> Application
+Tests ..> Domain
+IntegrationTests ..> Infrastructure
+
+note right of Controllers
+  Controllers never depend directly
+  on RepositoryPorts or Persistence.
+end note
+
+note bottom of Infrastructure
+  Infrastructure implements domain repository
+  interfaces; dependency points inward.
+end note
+@enduml
