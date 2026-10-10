@@ -1,0 +1,140 @@
+@startuml
+title Library Management System - Domain Class Diagram
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "Reader and circulation" {
+  abstract class Reader {
+    +readerId: ReaderId
+    +name: String
+    +department: String
+    +status: ReaderStatus
+    +canBorrow(): boolean
+    +activeLoanCount(): int
+  }
+
+  class StudentReader {
+    +studentNo: String
+  }
+
+  class TeacherReader {
+    +employeeNo: String
+  }
+
+  class BorrowCard {
+    +cardNo: String
+    +issuedAt: Date
+    +status: CardStatus
+    +isValid(): boolean
+    +deactivate(): void
+  }
+
+  class Loan {
+    +loanId: LoanId
+    +borrowedAt: DateTime
+    +dueAt: DateTime
+    +returnedAt: DateTime
+    +status: LoanStatus
+    +isOverdue(at: DateTime): boolean
+    +close(at: DateTime): void
+  }
+
+  class Reservation {
+    +reservationId: ReservationId
+    +createdAt: DateTime
+    +queuePosition: int
+    +status: ReservationStatus
+    +cancel(): void
+    +promote(): void
+  }
+}
+
+package "Collection" {
+  abstract class LibraryItem {
+    +itemId: ItemId
+    +barcode: String
+    +status: ItemStatus
+    +isAvailable(): boolean
+    +markBorrowed(): void
+    +markReturned(): void
+  }
+
+  class BookTitle {
+    +titleId: TitleId
+    +isbn: String
+    +title: String
+    +publisher: String
+  }
+
+  class Book {
+    +language: String
+  }
+
+  class Magazine {
+    +issueNo: String
+    +publicationDate: Date
+  }
+
+  class Thesis {
+    +author: String
+    +institution: String
+  }
+}
+
+package "Rules and fines" {
+  class BorrowPolicy <<strategy>> {
+    +readerType: ReaderType
+    +maxActiveLoans: int
+    +loanPeriodDays: int
+    +allows(count: int): boolean
+    +dueAt(from: DateTime): DateTime
+  }
+
+  class FineRule <<strategy>> {
+    +itemType: ItemType
+    +dailyRate: Decimal
+    +graceDays: int
+    +calculate(daysOverdue: int): Decimal
+  }
+
+  class FineRecord {
+    +fineId: FineId
+    +amount: Decimal
+    +assessedAt: DateTime
+    +status: FineStatus
+    +settle(): void
+  }
+}
+
+enum ReaderStatus { ACTIVE; SUSPENDED; CLOSED }
+enum CardStatus { ACTIVE; LOST; CANCELLED }
+enum LoanStatus { ACTIVE; RETURNED; OVERDUE }
+enum ReservationStatus { QUEUED; READY; FULFILLED; CANCELLED }
+enum ItemStatus { AVAILABLE; ON_LOAN; RESERVED; LOST; WITHDRAWN }
+enum ReaderType { STUDENT; TEACHER }
+enum ItemType { BOOK; MAGAZINE; THESIS }
+enum FineStatus { UNPAID; PAID; WAIVED }
+
+Reader <|-- StudentReader
+Reader <|-- TeacherReader
+LibraryItem <|-- Book
+LibraryItem <|-- Magazine
+LibraryItem <|-- Thesis
+
+BookTitle "1" o-- "0..*" LibraryItem : copies
+Reader "1" *-- "1" BorrowCard : owns
+Reader "1" --> "1" BorrowPolicy : follows
+Reader "1" --> "0..*" Loan : creates
+Reader "1" --> "0..*" Reservation : places
+LibraryItem "1" --> "0..*" Loan : involved in
+LibraryItem "1" --> "0..*" Reservation : requested for
+Loan "1" --> "1" BorrowCard : recorded against
+Loan "1" --> "0..1" FineRecord : may incur
+FineRecord "1" --> "1" FineRule : assessed by
+BorrowPolicy ..> Reader : classifies
+FineRule ..> LibraryItem : classifies
+
+note "A Loan is the domain record for one copy borrowed by one card.\nA Reservation queue is ordered by createdAt/queuePosition." as N1
+N1 .. Loan
+N1 .. Reservation
+@enduml
