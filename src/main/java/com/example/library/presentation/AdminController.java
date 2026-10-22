@@ -5,12 +5,16 @@ import jakarta.validation.Valid;
 import java.util.Map;
 import com.example.library.application.CardService;
 import com.example.library.application.CatalogService;
+import com.example.library.application.ReservationService;
 import com.example.library.dto.*;
 @RestController @RequestMapping("/api/admin")
 public class AdminController {
  private final CardService cards;
  private final CatalogService catalog;
- public AdminController(CardService cards,CatalogService catalog){this.cards=cards;this.catalog=catalog;}
+ private final ReservationService reservations;
+ public AdminController(CardService cards,CatalogService catalog,ReservationService reservations){this.cards=cards;this.catalog=catalog;this.reservations=reservations;}
+ @PostMapping("/reservations/expire")
+ public Map<String,String> expire(@RequestHeader(value="X-Role",required=false) String role,@RequestHeader(value="X-Actor-Id",required=false) Long id){reservations.expire(Requests.actor(role,id));return Map.of("status","OK");}
  @PostMapping("/book-titles") @ResponseStatus(HttpStatus.CREATED)
  public Views.TitleView title(@RequestHeader(value="X-Role",required=false) String role,@RequestHeader(value="X-Actor-Id",required=false) Long id,@Valid @RequestBody Requests.AddTitle req){return catalog.addTitle(Requests.actor(role,id),req);}
  @PostMapping("/library-items") @ResponseStatus(HttpStatus.CREATED)
