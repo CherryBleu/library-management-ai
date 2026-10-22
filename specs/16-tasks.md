@@ -1,38 +1,146 @@
-# Agent 任务拆分
+# 实验二实现任务
 
-本文件将实验一规格工作和后续实验二工作拆分为可由 Agent 一次完成、一次审查的小任务。实验一完成后建立 baseline；baseline 之后不得由 Agent 擅自修改规格。
+共同输入：constitution、02、03、05、07、09、10~12、13、14、15。代码路径均相对 src/main/java/com/example/library/，测试文件位于 src/test/java/com/example/library/，资源位于 src/main/resources/。按序执行，先说明计划，每项完成检查后单独commit/push。
 
-## 实验一任务
+基线后禁止修改 specs/00~18、constitution 及实验一模型；19为执行记录可追加。每个任务不得修改白名单外文件。必要设计变更必须单独记录并审查，不能静默回写基线。
 
-| 编号 | 目标 | 输入规格 | 允许修改 | 不允许修改 | 验收标准 | 建议测试 |
-| --- | --- | --- | --- | --- | --- | --- |
-| TASK-001 | 编写项目简述 | 实验一文档 | `specs/00-project-brief.md` | 其他规格、源码 | 目标、角色、业务范围、类型和暂不实现范围齐全 | Markdown 结构检查 |
-| TASK-002 | 提出并整理澄清问题 | `00-project-brief.md` | `specs/01-clarifying-questions.md` | 其他规格 | 20~30 个分类问题，末尾有人工回答区 | 问题数量和分类检查 |
-| TASK-003 | 建立开发宪章 | `00-project-brief.md`、`01-clarifying-questions.md` | `specs/constitution.md` | 其他规格、源码 | 包含 UML-as-Spec、分层 MVC、权限、审查和测试约束 | 规则逐项检查 |
-| TASK-004 | 生成需求规格 | `00-project-brief.md`、`01-clarifying-questions.md`、宪章 | `specs/02-requirements.md` | 其他规格、源码 | FR、NFR、BR 编号连续，每个 FR 有验收标准 | 编号和追踪检查 |
-| TASK-005 | 生成用例文本 | `02-requirements.md` | `specs/03-use-cases.md` | 其他规格、源码 | 参与者、UC 编号、前后置条件、主/备选/异常流齐全，五个重点用例详细 | 需求覆盖检查 |
-| TASK-006 | 生成用例图 | `03-use-cases.md` | `specs/04-use-case-model.puml` | 其他规格、源码 | 包含五类参与者、泛化、include/extend 和核心用例 | PlantUML 语法/渲染检查 |
-| TASK-007 | 生成领域模型 | `02-requirements.md`、`03-use-cases.md` | `specs/05-domain-model.md` | 其他规格、源码 | 实体、值对象、策略、服务及聚合不变量清晰 | 领域概念人工审查 |
-| TASK-008 | 生成领域类图 | `05-domain-model.md` | `specs/06-domain-class-diagram.puml` | 其他规格、源码 | 继承、聚合、关联和策略作用一致，不含技术设计类 | PlantUML 语法/关系检查 |
-| TASK-009 | 生成架构说明 | `02-requirements.md`、`05-domain-model.md`、宪章 | `specs/07-architecture.md` | 其他规格、源码 | 分层 MVC、模块、权限、异常、事务和模式完整 | 架构约束清单 |
-| TASK-010 | 生成包图 | `07-architecture.md` | `specs/08-package-diagram.puml` | 其他规格、源码 | 包和依赖方向正确，Controller 不直连 Repository | PlantUML 语法/依赖检查 |
-| TASK-011 | 设计数据库 | `05-domain-model.md`、`07-architecture.md` | `specs/13-database-design.md` | 其他规格、源码 | 必需表、字段、主外键、唯一约束、状态、索引和继承映射完整 | 字段与领域模型交叉检查 |
-| TASK-012 | 分析风险与生成审查清单 | 全部实验一规格 | `specs/17-risk-analysis.md`、`specs/18-review-checklist.md` | 其他规格、源码 | 风险覆盖需求/模型/架构/数据/权限/Agent；审查项可人工判断 | 清单逐项勾选 |
-| TASK-013 | 记录 AI 使用过程 | 提示词手册第 20 条、所有任务结果 | `specs/19-ai-usage-log.md` | 其他规格、源码 | 完整六阶段，每阶段包含八个模板字段，未执行阶段明确说明 | 字段和阶段完整性检查 |
+## TASK-001 初始化项目
 
-## Baseline 后的后续任务（实验二，暂不执行）
+- 目标：初始化项目。
+- 输入规格：共同输入和前序产物。
+- 允许修改：pom.xml、.gitignore、LibraryApplication.java、application.properties、StartupTest.java。
+- 不允许修改：基线规格及本任务白名单外文件。
+- 实现要求：只有结构和启动，无业务。
+- 验收标准：编译通过，启动测试通过，diff范围正确。
+- 建议测试：mvn test，优先运行启动测试相关测试。
 
-| 编号 | 目标 | 允许修改 | 验收标准 |
-| --- | --- | --- | --- |
-| TASK-014 | 详细设计模型和三张时序图 | `09-design-model.md`、`10~12-*.puml` | 每个核心用例有 Controller、Service、Domain、Repository、DTO、事务和异常路径 |
-| TASK-015 | API 规格与测试计划 | `14-api-spec.md`、`15-test-plan.md` | 接口和测试覆盖注册、办证、查询、借还、预约、维护及权限失败 |
-| TASK-016 | 生成实现任务并逐项编码 | `16-tasks.md` 指定的源码文件 | 单次只实现一个 TASK，遵守规格基线并通过对应自动化测试 |
-| TASK-017 | 实现核心领域与应用服务 | 仅任务指定源码文件 | 借还、预约、罚款和权限规则可执行，事务失败整体回滚 |
-| TASK-018 | 运行测试并修复最小问题 | 任务指定源码和测试文件 | 单元/集成测试通过，失败原因和修复记录在 AI 使用日志 |
+## TASK-002 领域实体
 
-## 执行约束
+- 目标：领域实体。
+- 输入规格：共同输入和前序产物。
+- 允许修改：domain/（repository和规则服务除外）。
+- 不允许修改：基线规格及本任务白名单外文件。
+- 实现要求：实体、分类、状态、Factory，纯Java。
+- 验收标准：编译通过，编译通过，diff范围正确。
+- 建议测试：mvn test，优先运行编译相关测试。
 
-1. 每个任务开始前读取其输入规格，先输出计划，再修改允许文件。
-2. 任务完成后必须运行对应检查并由人工审查 `git diff`。
-3. 实验一 baseline 建立后，TASK-014 及以后不得回写实验一规格；若发现规格问题，必须创建单独的变更任务并重新审查。
+## TASK-003 Repository
+
+- 目标：Repository。
+- 输入规格：共同输入和前序产物。
+- 允许修改：domain/repository/、infrastructure/、schema.sql、data.sql、RepositoryTest.java。
+- 不允许修改：基线规格及本任务白名单外文件。
+- 实现要求：关系表、锁、唯一约束、快照映射。
+- 验收标准：编译通过，TC-036通过，diff范围正确。
+- 建议测试：mvn test，优先运行TC-036相关测试。
+
+## TASK-004 借阅策略
+
+- 目标：借阅策略。
+- 输入规格：共同输入和前序产物。
+- 允许修改：domain/circulation/BorrowPolicyService.java、BorrowPolicyTest.java。
+- 不允许修改：基线规格及本任务白名单外文件。
+- 实现要求：五类规则、上限及逾期。
+- 验收标准：编译通过，TC-034通过，diff范围正确。
+- 建议测试：mvn test，优先运行TC-034相关测试。
+
+## TASK-005 罚款策略
+
+- 目标：罚款策略。
+- 输入规格：共同输入和前序产物。
+- 允许修改：domain/fine/FineRuleService.java、FineService.java、FineRuleTest.java。
+- 不允许修改：基线规格及本任务白名单外文件。
+- 实现要求：BigDecimal、封顶、非正天零元。
+- 验收标准：编译通过，TC-034通过，diff范围正确。
+- 建议测试：mvn test，优先运行TC-034相关测试。
+
+## TASK-006 读者和借阅证
+
+- 目标：读者和借阅证。
+- 输入规格：共同输入和前序产物。
+- 允许修改：application/ReaderService.java、CardService.java、AuthorizationService.java、AuditService.java、dto/、presentation/ReaderController.java、AdminController.java、ApiErrors.java、CardTest.java。
+- 不允许修改：基线规格及本任务白名单外文件。
+- 实现要求：注册办证、模拟身份校验、DTO和异常映射。
+- 验收标准：编译通过，TC-001/002/014/015/017通过，diff范围正确。
+- 建议测试：mvn test，优先运行TC-001/002/014/015/017相关测试。
+
+## TASK-007 目录管理
+
+- 目标：目录管理。
+- 输入规格：共同输入和前序产物。
+- 允许修改：application/CatalogService.java、presentation/AdminController.java、CatalogTest.java。
+- 不允许修改：基线规格及本任务白名单外文件。
+- 实现要求：标题、副本、删除保护。
+- 验收标准：编译通过，TC-018/027通过，diff范围正确。
+- 建议测试：mvn test，优先运行TC-018/027相关测试。
+
+## TASK-008 借书
+
+- 目标：借书。
+- 输入规格：共同输入和前序产物。
+- 允许修改：application/CirculationService.java、presentation/LibrarianController.java、BorrowTest.java。
+- 不允许修改：基线规格及本任务白名单外文件。
+- 实现要求：验证资格、创建借阅和快照、保留副本所属检查。
+- 验收标准：编译通过，TC-003~007通过，diff范围正确。
+- 建议测试：mvn test，优先运行TC-003~007相关测试。
+
+## TASK-009 还书
+
+- 目标：还书。
+- 输入规格：共同输入和前序产物。
+- 允许修改：application/CirculationService.java、application/ReservationService.java（队列协作）、ReturnTest.java。
+- 不允许修改：基线规格及本任务白名单外文件。
+- 实现要求：归还、罚款、队首分配。
+- 验收标准：编译通过，TC-008~010/019/025通过，diff范围正确。
+- 建议测试：mvn test，优先运行TC-008~010/019/025相关测试。
+
+## TASK-010 预约
+
+- 目标：预约。
+- 输入规格：共同输入和前序产物。
+- 允许修改：application/ReservationService.java、ReservationScheduler.java、presentation/ReaderController.java、AdminController.java、ReservationTest.java。
+- 不允许修改：基线规格及本任务白名单外文件。
+- 实现要求：排队、重复、限额、取消、超时。
+- 验收标准：编译通过，TC-012/013/016/022~024/033通过，diff范围正确。
+- 建议测试：mvn test，优先运行TC-012/013/016/022~024/033相关测试。
+
+## TASK-011 查询
+
+- 目标：查询。
+- 输入规格：共同输入和前序产物。
+- 允许修改：application/QueryService.java、presentation/ReaderController.java、QueryTest.java。
+- 不允许修改：基线规格及本任务白名单外文件。
+- 实现要求：目录、历史借阅、所有权。
+- 验收标准：编译通过，TC-011/020/021通过，diff范围正确。
+- 建议测试：mvn test，优先运行TC-011/020/021相关测试。
+
+## TASK-012 管理员和规则
+
+- 目标：管理员和规则。
+- 输入规格：共同输入和前序产物。
+- 允许修改：application/AdminService.java、presentation/AdminController.java、AdminTest.java。
+- 不允许修改：基线规格及本任务白名单外文件。
+- 实现要求：管理员保护、规则版本、罚款减免、审计。
+- 验收标准：编译通过，TC-014/025~029/032通过，diff范围正确。
+- 建议测试：mvn test，优先运行TC-014/025~029/032相关测试。
+
+## TASK-013 完善测试
+
+- 目标：完善测试。
+- 输入规格：共同输入和前序产物。
+- 允许修改：src/test/、必要的最小源码修复。
+- 不允许修改：基线规格及本任务白名单外文件。
+- 实现要求：并发/回滚/架构/接口验证，修复须记录。
+- 验收标准：编译通过，TC-030/031/035及全部测试通过，diff范围正确。
+- 建议测试：mvn test，优先运行TC-030/031/035及全部测试相关测试。
+
+## TASK-014 README和复盘
+
+- 目标：README和复盘。
+- 输入规格：共同输入和前序产物。
+- 允许修改：README.md、specs/19-ai-usage-log.md、review/experiment2-results.md。
+- 不允许修改：基线规格及本任务白名单外文件。
+- 实现要求：真实命令、接口、六阶段记录和证据。
+- 验收标准：编译通过，启动和HTTP验收通过，diff范围正确。
+- 建议测试：mvn test，优先运行启动和HTTP验收相关测试。
 
