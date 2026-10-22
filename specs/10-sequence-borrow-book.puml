@@ -1,0 +1,45 @@
+@startuml
+title 办理借书：授权、事务与异常
+actor Librarian
+participant LibrarianController as C
+participant CirculationService as S
+participant BorrowCardRepository as Cards
+participant ReaderRepository as Readers
+participant LoanRepository as Loans
+participant LibraryItemRepository as Items
+participant BorrowPolicyService as Policy
+participant Reader as R
+participant LibraryItem as I
+participant Loan as L
+Librarian -> C : borrow(cardNo, barcode)
+C -> S : borrow(actor, request)
+S -> S : authorize LIBRARIAN / begin transaction / lock
+S -> Cards : find card and validate dates
+alt 无效借阅证
+ S --> C : INVALID_CARD (rollback)
+else 有效证
+ S -> Readers : find reader
+ S -> R : assert active
+ S -> Loans : list current loans
+ S -> Policy : canBorrow(reader, loans, today)
+ alt 当前数量 >= 上限
+  S --> C : BORROW_LIMIT (rollback)
+ else 存在逾期未还
+  S --> C : OVERDUE_LOAN (rollback)
+ else 资格通过
+  S -> Items : find barcode
+  S -> I : assert available / reserved for reader
+  alt 非本馆 / 不可借 / 保留给别人
+   S --> C : ITEM_NOT_FOUND / ITEM_UNAVAILABLE (rollback)
+  else 可借
+   S -> Policy : getBorrowDays(readerType)
+   S -> L : create(dueDate, policyId, fine snapshot)
+   S -> Loans : insert loan
+   S -> Items : mark ON_LOAN
+   S -> S : fulfill matching reservation / audit / commit
+   S --> C : LoanView
+  end
+ end
+end
+C --> Librarian : HTTP response
+@enduml
