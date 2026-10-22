@@ -1,0 +1,45 @@
+@startuml
+title 办理还书：事务内结算与队首分配
+actor Librarian
+participant LibrarianController as C
+participant CirculationService as S
+participant LibraryItemRepository as Items
+participant LoanRepository as Loans
+participant FineService as F
+participant FineRuleService as Rules
+participant LibraryItem as I
+participant Loan as L
+participant FineRecord as Fine
+participant ReservationService as Queue
+Librarian -> C : returnBook(barcode)
+C -> S : returnBook(actor, request)
+S -> S : authorize / begin transaction / lock
+S -> Items : find barcode
+alt 非本馆藏书
+ S --> C : ITEM_NOT_FOUND (rollback)
+else 本馆藏书
+ S -> Loans : find active loan
+ alt 未找到未归还记录
+  S --> C : LOAN_NOT_FOUND (rollback)
+ else 找到借阅
+  S -> F : calculate(loan snapshot, today)
+  F -> Rules : calculateFine(snapshot, overdueDays)
+  alt overdueDays > 0
+   Rules --> F : min(days * rate, cap)
+  else 未超期
+   Rules --> F : 0.00
+  end
+  F -> Fine : create calculation result
+  S -> L : close(today, returnLibrarian)
+  S -> Loans : update RETURNED / save fine
+  S -> I : mark AVAILABLE
+  S -> Items : persist
+  S -> Queue : expireAndPromote(title)
+  note right of Queue : 队首 READY，保留至 today+3
+有可用副本时继续分配
+  S -> S : audit / commit
+  S --> C : ReturnView
+ end
+end
+C --> Librarian : HTTP response
+@enduml
