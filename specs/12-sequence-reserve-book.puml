@@ -1,0 +1,44 @@
+@startuml
+title 预约标题：顺序、上限和重复检查
+actor Reader as A
+participant ReaderController as C
+participant ReservationService as S
+participant ReaderRepository as Readers
+participant BookTitleRepository as Titles
+participant ReservationRepository as Reservations
+participant Reader as R
+participant BookTitle as T
+participant Reservation as Q
+A -> C : reserve(titleId)
+C -> S : reserve(actor, request)
+S -> S : authorize / begin transaction / lock
+S -> Readers : find actor reader
+alt 读者不存在
+ S --> C : READER_NOT_FOUND
+else 读者存在
+ S -> R : assert active and valid card
+ S -> Titles : find title
+ alt 标题不存在或停用
+  S --> C : TITLE_NOT_FOUND
+ else 有效标题
+  S -> T : check reservable
+  S -> Reservations : find active(readerId, titleId)
+  alt 重复预约
+   S --> C : DUPLICATE_RESERVATION (rollback)
+  else 已有5个有效预约
+   S --> C : RESERVATION_LIMIT (rollback)
+  else 有可直接借副本
+   S --> C : ITEM_AVAILABLE (rollback)
+  else 可以排队
+   S -> Reservations : next queue_no under lock
+   S -> Q : create WAITING at current instant
+   S -> Reservations : save
+   note right of Reservations : 同标题按 (created_at,id) 排序
+queue_no 单调递增，不复用取消序号
+   S -> S : audit / commit
+   S --> C : ReservationView
+  end
+ end
+end
+C --> A : HTTP response
+@enduml
