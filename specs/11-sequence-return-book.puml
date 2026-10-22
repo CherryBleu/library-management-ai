@@ -35,8 +35,10 @@ else 本馆藏书
   S -> I : mark AVAILABLE
   S -> Items : persist
   S -> Queue : expireAndPromote(title)
-  note right of Queue : 队首 READY，保留至 today+3
-有可用副本时继续分配
+  note right of Queue
+    队首 READY，保留至 today+3
+    有可用副本时继续分配
+  end note
   S -> S : audit / commit
   S --> C : ReturnView
  end
