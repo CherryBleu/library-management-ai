@@ -13,9 +13,11 @@ import com.example.library.domain.fine.*;
 @Service
 public class CirculationService {
  private final LibraryRepository repo;private final AuthorizationService auth;private final Clock clock;
- public CirculationService(LibraryRepository repo,AuthorizationService auth,Clock clock){this.repo=repo;this.auth=auth;this.clock=clock;}
+ private final ReservationService queue;
+ public CirculationService(LibraryRepository repo,AuthorizationService auth,Clock clock,ReservationService queue){this.repo=repo;this.auth=auth;this.clock=clock;this.queue=queue;}
  @Transactional public Views.LoanView borrow(Actor actor,Requests.BorrowBook req){
  repo.lock();auth.check(actor,LIBRARIAN);LocalDate today=LocalDate.now(clock);
+ queue.expireAndPromote();
  var card=repo.card(req.cardNo());require(card!=null&&card.valid(today),"INVALID_CARD");
  var reader=repo.reader(card.readerId());require(reader!=null&&reader.active(),"INVALID_CARD");
  var policies=new BorrowPolicyService(repo);policies.canBorrow(reader,repo.loans(reader.id()),today);
@@ -30,5 +32,16 @@ public class CirculationService {
  if(ownHold)repo.reservationStatus(hold.id(),"FULFILLED",item.id(),hold.holdUntil());
  repo.audit(actor,"BORROW","loan:"+id,"SUCCESS");
  return Views.loan(repo.activeLoan(item.id()),today);
+ }
+ @Transactional public Views.ReturnView returnBook(Actor actor,Requests.ReturnBook req){
+ repo.lock();auth.check(actor,LIBRARIAN);LocalDate today=LocalDate.now(clock);
+ var item=repo.item(req.barcode());require(item!=null,"ITEM_NOT_FOUND");
+ var loan=repo.activeLoan(item.id());require(loan!=null,"LOAN_NOT_FOUND");
+ var fines=new FineService();long days=fines.overdueDays(loan,today);
+ long fineId=repo.insertFine(loan,days,fines.calculate(loan,today));
+ repo.closeLoan(loan.id(),today,actor.id());repo.itemStatus(item.id(),"AVAILABLE");queue.expireAndPromote();
+ repo.audit(actor,"RETURN","loan:"+loan.id(),"SUCCESS");
+ var closed=repo.loans(loan.readerId()).stream().filter(l->l.id()==loan.id()).findFirst().orElseThrow();
+ return new Views.ReturnView(Views.loan(closed,today),repo.fine(fineId));
  }
 }

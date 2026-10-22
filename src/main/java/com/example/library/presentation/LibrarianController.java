@@ -8,6 +8,8 @@ import com.example.library.dto.*;
 public class LibrarianController {
  private final CirculationService service;
  public LibrarianController(CirculationService service){this.service=service;}
+ @PostMapping("/return")
+ public Views.ReturnView returnBook(@RequestHeader(value="X-Role",required=false) String role,@RequestHeader(value="X-Actor-Id",required=false) Long id,@Valid @RequestBody Requests.ReturnBook req){return service.returnBook(Requests.actor(role,id),req);}
  @PostMapping("/borrow") @ResponseStatus(HttpStatus.CREATED)
  public Views.LoanView borrow(@RequestHeader(value="X-Role",required=false) String role,@RequestHeader(value="X-Actor-Id",required=false) Long id,@Valid @RequestBody Requests.BorrowBook req){return service.borrow(Requests.actor(role,id),req);}
 }
