@@ -1,0 +1,13 @@
+INSERT INTO circulation_lock SELECT 1 WHERE NOT EXISTS(SELECT 1 FROM circulation_lock WHERE id=1);
+INSERT INTO system_admins(name,employee_no,status) SELECT 'Demo administrator','ADMIN001','ACTIVE' WHERE NOT EXISTS(SELECT 1 FROM system_admins WHERE employee_no='ADMIN001');
+INSERT INTO librarians(name,employee_no,status) SELECT 'Demo librarian','LIB001','ACTIVE' WHERE NOT EXISTS(SELECT 1 FROM librarians WHERE employee_no='LIB001');
+INSERT INTO borrow_policies(reader_type,max_active_loans,loan_period_days,version) SELECT 'UNDERGRADUATE',5,30,'initial-UNDERGRADUATE' WHERE NOT EXISTS(SELECT 1 FROM borrow_policies WHERE reader_type='UNDERGRADUATE');
+INSERT INTO borrow_policies(reader_type,max_active_loans,loan_period_days,version) SELECT 'GRADUATE',10,60,'initial-GRADUATE' WHERE NOT EXISTS(SELECT 1 FROM borrow_policies WHERE reader_type='GRADUATE');
+INSERT INTO borrow_policies(reader_type,max_active_loans,loan_period_days,version) SELECT 'DOCTORAL',15,90,'initial-DOCTORAL' WHERE NOT EXISTS(SELECT 1 FROM borrow_policies WHERE reader_type='DOCTORAL');
+INSERT INTO borrow_policies(reader_type,max_active_loans,loan_period_days,version) SELECT 'JUNIOR_COLLEGE',5,30,'initial-JUNIOR_COLLEGE' WHERE NOT EXISTS(SELECT 1 FROM borrow_policies WHERE reader_type='JUNIOR_COLLEGE');
+INSERT INTO borrow_policies(reader_type,max_active_loans,loan_period_days,version) SELECT 'TEACHER',20,90,'initial-TEACHER' WHERE NOT EXISTS(SELECT 1 FROM borrow_policies WHERE reader_type='TEACHER');
+INSERT INTO fine_rules(item_type,daily_rate,maximum_amount,version) SELECT 'CHINESE_BOOK',0.5,100,'initial-CHINESE_BOOK' WHERE NOT EXISTS(SELECT 1 FROM fine_rules WHERE item_type='CHINESE_BOOK');
+INSERT INTO fine_rules(item_type,daily_rate,maximum_amount,version) SELECT 'FOREIGN_BOOK',1,200,'initial-FOREIGN_BOOK' WHERE NOT EXISTS(SELECT 1 FROM fine_rules WHERE item_type='FOREIGN_BOOK');
+INSERT INTO fine_rules(item_type,daily_rate,maximum_amount,version) SELECT 'CHINESE_MAGAZINE',1,100,'initial-CHINESE_MAGAZINE' WHERE NOT EXISTS(SELECT 1 FROM fine_rules WHERE item_type='CHINESE_MAGAZINE');
+INSERT INTO fine_rules(item_type,daily_rate,maximum_amount,version) SELECT 'FOREIGN_MAGAZINE',2,200,'initial-FOREIGN_MAGAZINE' WHERE NOT EXISTS(SELECT 1 FROM fine_rules WHERE item_type='FOREIGN_MAGAZINE');
+INSERT INTO fine_rules(item_type,daily_rate,maximum_amount,version) SELECT 'THESIS',2,300,'initial-THESIS' WHERE NOT EXISTS(SELECT 1 FROM fine_rules WHERE item_type='THESIS');
